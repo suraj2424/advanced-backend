@@ -290,8 +290,6 @@ Answers:
 
 2.  because it dictates how long your local networks and browsers cache your websites address, it acts as timer for how long the internet takes time to recognize your new servers.
 
-3. downtime and routing errors, traffic will be splitted in old traffic and new traffic, old traffic will encounter service down
-
 Senior engineers often do:
 ```text
 1 week before migration:
@@ -308,3 +306,75 @@ Wait
 Increase TTL again
 ```
 This is a very common production pattern.
+
+
+3. downtime and routing errors, traffic will be splitted in old traffic and new traffic, old traffic will encounter service down.
+
+```text
+Some users
+     ↓
+Old IP
+
+Other users
+     ↓
+New IP
+```
+This can create extremely confusing incidents.
+
+Imagine:
+```text
+Old Server
+     ↓
+Already shut down
+```
+Users with cached records:
+```text
+api.company.com
+      ↓
+Old Dead Server
+```
+Result:
+```text
+Connection refused
+Timeout
+503
+```
+Meanwhile:
+```text
+New users
+      ↓
+New Server
+```
+Now support receives:
+
+> "Website works for me but not for customers."
+
+This is a **classic DNS propagation problem**.
+
+### DNS MENTAL MODEL (REMEMBER THIS)
+When a user says:
+
+> "The site is down."
+
+Ask:
+```text
+Can I resolve the domain?
+```
+
+When a user says:
+
+> "It works for some people but not others."
+
+Ask:
+```text
+Is this DNS caching or propagation?
+```
+
+When a user says:
+
+> "We migrated servers and traffic is weird."
+
+Ask:
+```text
+What is the TTL?
+```
