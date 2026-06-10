@@ -3,7 +3,7 @@
 #### 1. Why can't browsers directly use domain names to connect to servers?
 - because internal hardware and routing doesnt understand English words.
 #### 2. What problem does DNS solve?
-- its solve such that we can easily navigate to any serve with the use of english words
+- its solve such that we can easily navigate to any server with the use of english words
 #### 3. What is TTL?
 - time to live for a dns cache such that browser will not lookup continously for ip address of a server for any domain name
 #### 4. What is the difference between an A record and a CNAME record?
