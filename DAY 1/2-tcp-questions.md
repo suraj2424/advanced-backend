@@ -140,3 +140,15 @@ HTTP comes AFTER TCP
 ```
 
 This is the fundamental interview question.
+
+
+#### 2. Why isn't a 2-way handshake enough?
+
+Example:
+```text
+Client → SYN
+Server → ACK
+```
+Why do we need the third ACK from the client?
+
+

@@ -253,3 +253,15 @@ A production engineer immediately asks:
 
 Many outages happen before the request even reaches your Node.js application.
 
+
+
+# TCP
+
+- **THREE WAY HANDSHAKE**
+
+```text
+Client → SYN
+Server → SYN-ACK
+Client → ACK
+```
+
