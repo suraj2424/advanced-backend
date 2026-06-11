@@ -152,3 +152,152 @@ Server → ACK
 Why do we need the third ACK from the client?
 
 
+**ANSWER**
+
+<h6>Step 1</h6>
+
+```text
+Client → SYN
+```
+
+Client says:
+```text
+I can send packets to you.
+```
+At this point the server knows:
+
+✅ Client → Server path works
+
+But it doesn't know:
+
+❌ Server → Client path works
+
+<h6>Step 2</h6>
+
+```text
+Server → SYN + ACK
+```
+
+Server says:
+```text
+I received your SYN.
+Here is my own SYN.
+```
+Now the client knows:
+
+✅ Server → Client path works
+
+because it received the SYN-ACK.
+
+But the server still doesn't know:
+
+❌ Did the client receive my SYN-ACK?
+❌ Is the Client ← Server path fully working?
+
+<h6>Step 3</h6>
+
+```text
+Client → ACK
+```
+
+Client says:
+
+```text
+I received your SYN-ACK.
+```
+
+Now the server finally knows:
+
+✅ Client → Server works
+✅ Server → Client works
+✅ Client received my response
+
+Now both directions are verified.
+
+#### 3. Why 2-Way Handshake can fail?
+
+Imagine:
+```text
+Client → SYN
+```
+reaches server.
+
+Server replies:
+```text
+ACK
+```
+But the ACK gets lost.
+
+Client ❌ never receives ACK
+
+Now:
+```text
+Client thinks:
+Connection not established
+
+Server thinks:
+Connection established
+```
+The two sides disagree.
+
+This is called a `half-open connection`.
+
+TCP's third ACK prevents this ambiguity.
+
+
+
+<h4>Production Analogy</h4>
+
+Imagine calling someone.
+
+Two-way version
+```text
+You: "Hello?"
+Friend: "Hello."
+```
+Then the line cuts.
+
+Did they hear your response?
+
+Did you hear theirs?
+
+Not clear.
+
+---
+
+Three-way version
+```text
+You: "Hello?"
+Friend: "Hello, I hear you."
+You: "Great, I hear you too."
+```
+Now both sides know communication works in both directions.
+
+
+#### 4. QUICK CHECK
+WHICH HAPPENS FIRST?
+
+Suppose a browser requests:
+```text
+https://api.company.com/users
+```
+
+A)
+```text
+HTTP Request
+↓
+TCP Handshake
+↓
+TLS Handshake
+```
+
+B) 
+```text
+TCP Handshake
+↓
+TLS Handshake
+↓
+HTTP Request
+```
+
+And explain why that order is required. This question is asked surprisingly often in backend and system design interviews.
