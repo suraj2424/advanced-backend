@@ -264,4 +264,101 @@ Client → SYN
 Server → SYN-ACK
 Client → ACK
 ```
+**MESSAGE OUTPUT**
+
+TCP does not think in terms of messages.
+
+TCP thinks in terms of a continuous byte stream.
+
+For example:
+```text
+Hello
+World
+```
+
+might be sent as:
+```text
+Hel
+loWo
+rld
+```
+or
+```text
+HelloWor
+ld
+```
+
+TCP reassembles everything in order.
+
+```text
+Hello
+World
+```
+
+
+## Why TCP Is Slower Than UDP
+
+Imagine:
+```text
+Packet 1 lost
+Packet 2 arrived
+Packet 3 arrived
+```
+
+TCP says:
+```text
+Stop.
+Need Packet 1.
+```
+This waiting adds latency.
+
+--- 
+
+But
+UDP says:
+```text
+Cool.
+Use whatever arrived.
+```
+No waiting.
+
+That's why:
+```text
+Video Calls
+Gaming
+Live Streaming
+```
+Often use UDP
+
+
+While:
+```text
+HTTP
+PostgreSQL
+Redis
+SSH
+```
+use TCP.
+
+Reliability > speed.
+
+## The Most Important TCP Concept
+
+A senior backend engineer thinks:
+```text
+TCP = Reliable
+Ordered
+Connection-oriented
+```
+Whenever you see:
+```text
+HTTP
+HTTPS
+PostgreSQL
+Redis
+SSH
+```
+you should automatically think:
+
+**TCP** underneath.
 

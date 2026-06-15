@@ -301,3 +301,320 @@ HTTP Request
 ```
 
 And explain why that order is required. This question is asked surprisingly often in backend and system design interviews.
+
+
+
+<h5>ANSWER</h5>
+
+**COMPLETE FLOW**
+
+When you open:
+```text
+https://api.company.com/users
+```
+
+The company roughly does:
+```text
+1. DNS Lookup
+2. TCP Handshake
+3. TLS Handshake
+4. HTTP Request
+5. HTTP Response
+```
+
+
+**Why TCP Must Come Before TLS**
+
+TLS is not a transport protocol.
+
+TLS doesn't move packets across the network.
+
+TCP does.
+
+Think:
+```text
+TLS needs a communication channel.
+TCP provides that channel.
+```
+
+
+So:
+```text
+TCP Connection
+      ↓
+TLS Handshake
+```
+not
+```text
+TLS Handshake
+      ↓
+TCP Connection
+```
+because TLS has nowhere to send messages without TCP.
+
+---
+
+**Why TLS Must Come Before HTTP**
+
+Suppose we skip TLS.
+
+Browser immediately sends:
+```http
+GET /users
+Authorization: Bearer xyz
+```
+
+Anyone between client and server could read:
+```text
+WiFi Router
+ISP
+Malicious Proxy
+```
+
+including:
+```text
+JWT Tokens
+Passwords
+Cookies
+```
+
+TLS establishes:
+```text
+Encryption Keys
+```
+
+first.
+
+Only then can HTTP traffic be encrypted.
+
+---
+
+**What Actually Happens**
+
+```text
+Browser
+   ↓
+DNS
+   ↓
+52.10.20.30
+   ↓
+TCP Handshake
+   ↓
+Connection Established
+   ↓
+TLS Handshake
+   ↓
+Encryption Established
+   ↓
+GET /users
+   ↓
+HTTP Response
+```
+
+This is the mental model you should keep.
+
+
+**Incident Scenario**
+
+A senior engineer sees:
+
+```text
+Total API Latency = 900ms
+```
+
+They immediately ask:
+```text
+DNS = ?
+TCP = ?
+TLS = ?
+Application = ?
+Database = ?
+```
+
+Example:
+```text
+DNS = 50ms
+TCP = 80ms
+TLS = 200ms
+Node = 100ms
+Database = 470ms
+```
+
+Total:
+```text
+900ms
+```
+
+Now you know the database is the main bottleneck.
+
+Without understanding the layers, many developers jump straight into Express code.
+
+---
+
+#### 5. Packets Sequencing Matters?
+
+Suppose:
+```text
+Client
+   ↓
+TCP Connection
+   ↓
+Server
+```
+
+Client sends:
+```text
+Packet 1
+Packet 2
+Packet 3
+```
+
+Network delivers:
+```text
+Packet 2
+Packet 3
+Packet 1
+```
+
+**Questions:**
+1. Will the application receive:
+```text
+2,3,1
+```
+or
+```text
+1,2,3
+```
+
+2. How do you think TCP is able to guarantee that order?
+
+
+**ANSWERS**
+QUESTION 1
+
+If network delivers:
+```text
+Packet 2
+Packet 3
+Packet 1
+```
+
+Will your Node.js application receive:
+```text
+2
+3
+1
+```
+❌ No.
+
+TCP guarantees:
+```text
+1
+2
+3
+```
+
+This is one of TCP's biggest promises:
+
+> Ordered delivery.
+
+
+**How Does TCP Do That?**
+
+Every packet contains a sequence number.
+
+Imagine:
+```text
+Packet 1 → Seq 1000
+Packet 2 → Seq 2000
+Packet 3 → Seq 3000
+```
+
+The receiver knows:
+```text
+1000 comes first
+2000 comes second
+3000 comes third
+```
+
+**What If Packet 1 Arrives Last?**
+
+Network delivers:
+```text
+Packet 2
+Packet 3
+```
+
+Receiver sees:
+```text
+Expected: Packet 1
+Received: Packet 2
+```
+
+So it doesn't immediately hand data to your application.
+
+Instead it waits.
+
+```text
+Buffer Packet 2
+Buffer Packet 3
+```
+
+Then:
+```text
+Packet 1 arrives
+```
+
+Now:
+```text
+1
+2
+3
+```
+can be delivered to Node.js.
+
+**What If Packet 1 Never Arrives?**
+
+Receiver notices:
+
+Missing Sequence Number
+
+and requests retransmission.
+
+Simplified:
+
+```text
+I got:
+2
+3
+
+Where is:
+1 ?
+```
+
+Sender resends Packet 1.
+
+Only after it arrives can TCP complete the ordered stream.
+
+---
+
+**Why This Matters**
+
+Suppose you're downloading:
+```text
+10 MB image
+```
+
+Without ordering guarantees:
+```text
+Middle arrives first
+End arrives second
+Beginning arrives last
+```
+
+The file becomes corrupted.
+
+TCP prevents that.
+
+---
+
